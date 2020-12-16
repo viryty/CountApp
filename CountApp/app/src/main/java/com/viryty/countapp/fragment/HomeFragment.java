@@ -16,13 +16,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.viryty.countapp.R;
 import com.viryty.countapp.adapter.HomeAdapter;
 import com.viryty.countapp.model.Subject;
+import com.viryty.countapp.utils.OnStartDragLisntener;
 import com.viryty.countapp.utils.OnViewHolderHelper;
 import com.viryty.countapp.utils.SimpleItemTouchHelperCallback;
+import com.viryty.countapp.utils.SubjectItems;
 
 import java.util.ArrayList;
 import java.util.Date;
 
-public class HomeFragment extends Fragment implements OnViewHolderHelper {
+public class HomeFragment extends Fragment implements OnViewHolderHelper, OnStartDragLisntener {
 
     public final static String NAME_FRAGMENT = "Главная";
 
@@ -30,8 +32,9 @@ public class HomeFragment extends Fragment implements OnViewHolderHelper {
 
     private RecyclerView recyclerView;
     private HomeAdapter homeAdapter;
-    private ArrayList<Subject> subjects;
     private ItemTouchHelper itemTouchHelper;
+
+    private SubjectItems subjectItems;
 
     public static Fragment newInstance() {
         if(instance == null) {
@@ -40,27 +43,21 @@ public class HomeFragment extends Fragment implements OnViewHolderHelper {
         return instance;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        subjectItems = SubjectItems.get(getActivity());
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
 
-        subjects = new ArrayList<>();
-
-        for(int i = 1; i <= 15; i++) {
-            Subject subject = new Subject();
-            subject.setTitle(String.valueOf(i));
-            if (i % 2 == 0) {
-                subject.setFavorite(true);
-            } else {
-                subject.setFavorite(false);
-            }
-            subjects.add(subject);
-        }
-
         recyclerView = v.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        homeAdapter = new HomeAdapter(subjects, this);
+        homeAdapter = new HomeAdapter(subjectItems.getSubjects(), this, this);
         recyclerView.setAdapter(homeAdapter);
 
         ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(homeAdapter);
@@ -72,31 +69,40 @@ public class HomeFragment extends Fragment implements OnViewHolderHelper {
 
     @Override
     public void onMove(int fromPosition, int toPosition) {
-        Subject subject = subjects.remove(fromPosition);
-        subjects.add(toPosition > fromPosition + 1 ? toPosition - 1 : toPosition, subject);
+        //Subject subject = subjects.remove(fromPosition);
+        //subjects.add(toPosition > fromPosition + 1 ? toPosition - 1 : toPosition, subject);
+
+        subjectItems.updateSubjectMove(fromPosition, toPosition);
         homeAdapter.notifyItemMoved(fromPosition, toPosition);
     }
 
     @Override
     public void onRemove(int position) {
-        subjects.remove(position);
+        //Subject subject = subjects.remove(position);
+        subjectItems.removeSubject(position);
         homeAdapter.notifyItemRemoved(position);
     }
 
     @Override
     public void onRemoveFavorite(int position) {
-        Subject subject = subjects.remove(position);
+        Subject subject = subjectItems.getSubject(position);
         if (subject.isFavorite()) {
             subject.setFavorite(false);
         } else {
             subject.setFavorite(true);
         }
-        subjects.add(position, subject);
+
+        subjectItems.updateSubject(subject);
         homeAdapter.notifyItemChanged(position);
     }
 
     @Override
     public void onClick(int position) {
         Log.d("Test", position + " click");
+    }
+
+    @Override
+    public void onStartDrag(RecyclerView.ViewHolder viewHolder) {
+        itemTouchHelper.startDrag(viewHolder);
     }
 }
