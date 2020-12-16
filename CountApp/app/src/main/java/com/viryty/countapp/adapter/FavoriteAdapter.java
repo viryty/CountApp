@@ -1,6 +1,5 @@
 package com.viryty.countapp.adapter;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -22,14 +21,14 @@ import com.viryty.countapp.utils.OnViewHolderHelper;
 
 import java.util.ArrayList;
 
-public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.SubjectVH>
+public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.FavoriteVH>
         implements ItemTouchHelperAdapter {
 
     private ArrayList<Subject> subjects;
     private OnViewHolderHelper onViewHolderHelper;
     private OnStartDragLisntener onStartDragLisntener;
 
-    public HomeAdapter(ArrayList<Subject> subjects, OnViewHolderHelper onViewHolderHelper, OnStartDragLisntener onStartDragLisntener) {
+    public FavoriteAdapter(ArrayList<Subject> subjects, OnViewHolderHelper onViewHolderHelper, OnStartDragLisntener onStartDragLisntener) {
         this.subjects = subjects;
         this.onViewHolderHelper = onViewHolderHelper;
         this.onStartDragLisntener = onStartDragLisntener;
@@ -37,13 +36,13 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.SubjectVH>
 
     @NonNull
     @Override
-    public SubjectVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public FavoriteVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_subject, parent, false);
-        return new SubjectVH(v, onViewHolderHelper);
+        return new FavoriteVH(v, onViewHolderHelper);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SubjectVH holder, int position) {
+    public void onBindViewHolder(@NonNull FavoriteVH holder, int position) {
         holder.handler.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -68,15 +67,10 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.SubjectVH>
 
     @Override
     public void onItemDismiss(int position, int direction) {
-        if(direction == ItemTouchHelper.END) {
-            onViewHolderHelper.onRemove(position);
-        } else {
-           onViewHolderHelper.onRemoveFavorite(position);
-        }
-
+        onViewHolderHelper.onRemoveFavorite(position);
     }
 
-    public class SubjectVH extends RecyclerView.ViewHolder implements ItemTouchHelperViewHolder, View.OnClickListener {
+    public class FavoriteVH extends RecyclerView.ViewHolder implements ItemTouchHelperViewHolder, View.OnClickListener {
 
         private OnViewHolderHelper onViewHolderHelper;
 
@@ -86,7 +80,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.SubjectVH>
         private TextView count;
         private ImageView icon;
 
-        public SubjectVH(@NonNull View itemView, OnViewHolderHelper onViewHolderHelper) {
+        public FavoriteVH(@NonNull View itemView, OnViewHolderHelper onViewHolderHelper) {
             super(itemView);
             this.onViewHolderHelper = onViewHolderHelper;
             itemView.setOnClickListener(this);
@@ -102,11 +96,12 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.SubjectVH>
             title.setText(subject.getTitle());
             date.setText(subject.getDate());
             count.setText(String.valueOf(subject.getCount()));
-            if (subject.isFavorite()) {
-                icon.setVisibility(View.VISIBLE);
-            } else {
-                icon.setVisibility(View.INVISIBLE);
-            }
+            icon.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        public void onClick(View v) {
+            onViewHolderHelper.onClick(getAdapterPosition());
         }
 
         @Override
@@ -118,11 +113,5 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.SubjectVH>
         public void onItemClear() {
             itemView.setAlpha(1f);
         }
-
-        @Override
-        public void onClick(View v) {
-            onViewHolderHelper.onClick(getAdapterPosition());
-        }
     }
-
 }
